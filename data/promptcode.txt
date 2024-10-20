@@ -19,7 +19,7 @@ def request_documentation_from_openai(transcription):
         messages=base_conversation
     )
 
-    print(completion.choices[0].message)
+    # print(completion.choices[0].message)
     return_answer = completion.choices[0].message.content
     return return_answer
 ```
@@ -78,7 +78,7 @@ async def transcribe_audio(filename):
     model="whisper-1", 
     file=audio_file
     )
-    print(transcription.text)
+    # print(transcription.text)
     return transcription.text
 
 

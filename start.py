@@ -19,6 +19,9 @@ def encode_image(image_path):
   with open(image_path, "rb") as image_file:
     return base64.b64encode(image_file.read()).decode('utf-8')
 
+#
+# Does some cleanup and possibly sanity checks in the future
+#
 def extract_text_between_backticks(text):
     # Regular expression pattern to match text between triple backticks
     pattern = r'```(.*?)```'
@@ -49,6 +52,23 @@ def perform_diagnostic():
     #
     # END Diagnostic information
     #
+
+def remove_python_lines(file_path):
+    # Define the word to filter out
+    filter_word = "python"
+    
+    # Open the original file in read mode and a new file in write mode
+    with open(file_path, 'r') as file, open('gen_code.py', 'w') as output_file:
+        # Iterate over each line in the file
+        for line in file:
+            # Strip whitespace from the start and end of the line
+            stripped_line = line.strip()
+            
+            # Check if the line is exactly the word 'Python'
+            if stripped_line != filter_word:
+                # If not, write the line to the output file
+                output_file.write(line)
+
 
 # Path to your image
 # TODO: make configurable by user
@@ -93,34 +113,6 @@ response = client.chat.completions.create(
 
 print(response.choices[0])
 
-'''
-payload = {
-  "model": "gpt-4-vision-stable",
-  "messages": [
-    {
-      "role": "user",
-      "content": [
-        {
-          "type": "text",
-          "text": "Summarize the workflow in the image in the following way in less than 50 words: A step labeled ? followed. by a step labeled ? where the question mark is filled by the text detected in the boxes"
-        },
-        {
-          "type": "image_url",
-          "image_url": {
-            "url": f"data:image/jpeg;base64,{base64_image}"
-          }
-        }
-      ]
-    }
-  ],
-  "max_tokens": 300
-}
-
-response = requests.post("https://api.openai.com/v1/chat/completions", headers=headers, json=payload)
-
-
-'''
-
 ##prompt = response.json()['choices'][0]['message']['content']
 prompt = response.choices[0].message.content
 print("OpenAI results: " + prompt)
@@ -147,14 +139,7 @@ with open(file_path, 'r') as file:
 #     prompt = file.read()
 
 print("Input: " + prompt)
-'''
-client = openai.OpenAI(
-  api_key=os.environ.get("TOGETHER_API_KEY"),
-  base_url='https://api.together.xyz',
-)
 
-perform_diagnostic()
-'''
 #
 # Call the LLM to generate code
 #
@@ -177,29 +162,9 @@ response = client.chat.completions.create(
 )
 
 print(response.choices[0])
-'''
-chat_completion = client.chat.completions.create(
-  messages=[
-    {
-      "role": "system",
-      "content": file_contents,
-    },
-    {
-      "role": "user",
-      "content": prompt,
-    }
-  ],
-  model="mistralai/Mixtral-8x7B-Instruct-v0.1",
-  max_tokens=20000
-)
 
-answer=chat_completion.choices[0].message.content
-'''
 answer = response.choices[0].message.content
 
-print("====START ANSWER====")
-print(answer)
-print("====END ANSWER====")
 #
 # END: Take the summary and try to produce code
 #
@@ -216,6 +181,7 @@ with open(file_path, 'w') as file:
     for etext in extracted_text:
         file.write(etext + '\n')  # Add a newline character after each string
 
+remove_python_lines(file_path)
 for etext in extracted_text:
     print("====")
     print(etext)
