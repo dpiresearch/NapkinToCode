@@ -1,0 +1,6 @@
+. ~/.bashrc
+conda activate together
+
+cd ~/dev/togetherai
+python start.py
+
